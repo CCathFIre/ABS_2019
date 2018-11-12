@@ -153,6 +153,10 @@ void loop() {
   Serial.print(bno_gyro.z());
   Serial.print("\t\t");
 
+  // What number should go in here? Should this be removed
+  // delay for data sampling
+  delay(BNO055_SAMPLERATE_DELAY_MS);
+
   Serial.println();
   
 
@@ -194,9 +198,7 @@ void loop() {
 
 
 
-  // What is this? Can this be put further up?
-  // delay for data sampling
-  delay(BNO055_SAMPLERATE_DELAY_MS);
+
 
 
   
