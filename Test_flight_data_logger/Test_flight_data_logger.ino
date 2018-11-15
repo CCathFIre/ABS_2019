@@ -1,3 +1,11 @@
+/* COMMENT BEFORE FLIGHT CHECKLIST
+ *  - while(!Serial)
+ *  - all Serial.print statements
+ */
+
+
+
+
 // libraries
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
@@ -46,17 +54,9 @@ char filename[9] = "data.txt";
 
 void setup() {
 
-  Serial.begin(9600);   // printing to screen     DELETE
+  Serial.begin(9600);   // printing to screen
 
-  // DELETE THIS BEFORE FLIGHT
-  // DELETE
-  // DELETE
-
-  while(!Serial) ;      
-
-  // ^^^ DELETE THIS BEFORE FLIGHT
-  // ^^^
-  // ^^^
+  while(!Serial) ;  
   
   Wire.begin();        // Join i2c bus
 
@@ -135,6 +135,8 @@ void loop() {
   float mpl_alt = MPLPressure.readAltitude();
   float mpl_pres = MPLPressure.readPressure();
 
+  Kalman(mpl_alt, accel_z);
+
   dataFile = SD.open(filename, FILE_WRITE);
 
   // if the file is available, write to it:
@@ -155,7 +157,21 @@ void loop() {
     dataFile.print(l3g_gyro_y); dataFile.print(","); dataFile.flush();
     dataFile.print(l3g_gyro_z); dataFile.print(","); dataFile.flush();
     dataFile.print(mpl_alt); dataFile.print(","); dataFile.flush();
-    dataFile.print(mpl_pres); dataFile.print("\n"); dataFile.flush();
+    dataFile.print(mpl_pres); dataFile.print(","); dataFile.flush();
+    // state matrix begins
+    dataFile.print(x[0][0]); dataFile.print(","); dataFile.flush();
+    dataFile.print(x[1][0]); dataFile.print(","); dataFile.flush();
+    dataFile.print(x[2][0]); dataFile.print(","); dataFile.flush();
+    // covariance begins
+    dataFile.print(P[0][0]); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[0][1]); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[0][2]); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[1][0]); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[1][1]); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[1][2]); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[2][0]); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[2][1]); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[2][2]); dataFile.print("\n"); dataFile.flush();
     
     dataFile.close();
   } else {
@@ -187,8 +203,11 @@ void Print_Header() {
     dataFile.print("L3G Gyro Y rad/s,"); dataFile.flush();
     dataFile.print("L3G Gyro Z rad/s,"); dataFile.flush();
     dataFile.print("Altitude m,"); dataFile.flush();
-    dataFile.print("Pressure Pa\n"); dataFile.flush();
-    
+    dataFile.print("Pressure Pa"); dataFile.flush();
+    dataFile.print("Kalman Altitude"); dataFile.flush();
+    dataFile.print("Kalman Velocity"); dataFile.flush();
+    dataFile.print("Kalman Z Acceleration"); dataFile.flush();
+    dataFile.print("Covariance (3x3 Matrix)\n"); dataFile.flush();
     
     dataFile.close();
   } else {
