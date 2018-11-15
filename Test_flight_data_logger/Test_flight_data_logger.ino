@@ -31,9 +31,22 @@ MPL3115A2 MPLPressure;
 /* Assign a unique ID to this sensor at the same time */
 Adafruit_L3GD20_Unified gyro = Adafruit_L3GD20_Unified(20);
 
+char filename[9] = "data.txt";
+
 void setup() {
 
   Serial.begin(9600);   // printing to screen
+
+  // DELETE THIS BEFORE FLIGHT
+  // DELETE
+  // DELETE
+
+  while(!Serial) ;      
+
+  // ^^^ DELETE THIS BEFORE FLIGHT
+  // ^^^
+  // ^^^
+  
   Wire.begin();        // Join i2c bus
 
   if (!SD.begin(chipSelect)) {
@@ -65,6 +78,8 @@ void setup() {
   MPLPressure.setModeAltimeter(); // Measure altitude above sea level in meters (MPL)
   MPLPressure.setOversampleRate(7); // Set Oversample to the recommended 128
   MPLPressure.enableEventFlags(); // Enable all three pressure and temp event flags 
+
+  Print_Header();
 }
 
 void loop() {
@@ -103,7 +118,7 @@ void loop() {
   float mpl_alt = MPLPressure.readAltitude();
   float mpl_pres = MPLPressure.readPressure();
 
-  dataFile = SD.open("datalog2018.txt", FILE_WRITE);
+  dataFile = SD.open(filename, FILE_WRITE);
 
   // if the file is available, write to it:
   if (dataFile) {
@@ -126,6 +141,8 @@ void loop() {
     dataFile.print(mpl_pres); dataFile.print("\n"); dataFile.flush();
     
     dataFile.close();
+  } else {
+    Serial.print("whoops\n");
   }
 
   delay(DELAY_TIME);
@@ -135,7 +152,7 @@ void Print_Header() {
 
   Serial.println("We header");
 
-  dataFile = SD.open("datalog2018.txt", FILE_WRITE);
+  dataFile = SD.open(filename, FILE_WRITE);
 
   // if the file is available, write to it:
   if (dataFile) {
@@ -163,3 +180,5 @@ void Print_Header() {
   }
 
 }
+
+
