@@ -8,6 +8,13 @@
  *    - pAir
  *    - aRocket
  *    - mRocket
+ *    
+ * AFTER FLIGHT CHECKLIST
+ * - inspect SD card for data
+ * - copy data file to computer
+ * - update data file name on SD card
+ * - fire handguns wildly into the sky in celebratory gesture
+ * 
  */
 
 // libraries
@@ -46,7 +53,17 @@ mtx_type Q[3][3] = {{0, 0, 0}, {0, 0.001, 0}, {0, 0, 0.001}}; // Distrust of pre
 
 const int chipSelect = SDCARD_SS_PIN;
 
-int flightstate;
+int flightstate = ARMED;
+
+const float accelLiftoffThreshold = 50; //m/s^2
+const float baroLiftoffThreshold = 10; //m
+const float accelBurnoutThreshold = -5; //m/s^2
+const float baroApogeeThreshold = 5; //m
+const float baroLandedThreshold = 5; //m
+const float accelFreefallThreshold = 30; //m/s^2
+
+float launchA;
+float maxA = -100;
 
 File dataFile;
 
@@ -104,6 +121,9 @@ void setup() {
   
   x[0][0] = MPLPressure.readAltitude(); //Set initial altitude based on sensor reading
   lastT = millis();
+
+  launchA = MPLPressure.readAltitude();
+  
   delay(DELAY_TIME);
 
   Print_Header();
@@ -145,6 +165,10 @@ void loop() {
   float mpl_alt = MPLPressure.readAltitude();
   float mpl_pres = MPLPressure.readPressure();
 
+  if (maxA < x[2][0]) {
+    maxA = x[2][0];
+  }
+
   Kalman(mpl_alt, accel_z);
 
   dataFile = SD.open(filename, FILE_WRITE);
@@ -153,7 +177,8 @@ void loop() {
   if (dataFile) {
 
     Serial.println("WITNESS ME!!!");
-    
+
+    dataFile.print(flightstate); dataFile.print(","); dataFile.flush();
     dataFile.print(millis()); dataFile.print(","); dataFile.flush();
     dataFile.print(bno_temp); dataFile.print(","); dataFile.flush();
     dataFile.print(mpl_temp, 8); dataFile.print(","); dataFile.flush();
@@ -188,6 +213,32 @@ void loop() {
     Serial.print("whoops\n");
   }
 
+
+  switch(flightstate){
+    case ARMED:
+      if ( accel_z > accelLiftoffThreshold || ( x[0][0] - launchA) > baroLiftoffThreshold){
+        flightstate = LAUNCHED;
+      }
+    break;
+    case LAUNCHED:
+      if ( accel_z < accelBurnoutThreshold){
+        flightstate = BURNOUT;
+      }
+    break;
+    case BURNOUT:
+      if ( maxA > x[2][0] ){
+        flightstate = APOGEE;
+      }
+    break;
+    case APOGEE:
+      if ( x[1][0] < 0 ){
+        flightstate = LANDED;
+      }
+    break;
+    case LANDED:
+    break;
+  }
+
   delay(DELAY_TIME);
 }
 
@@ -200,6 +251,7 @@ void Print_Header() {
   // if the file is available, write to it:
   if (dataFile) {
     Serial.println("The header opened");
+    dataFile.print("Flight State,"); dataFile.flush();
     dataFile.print("Time ms,"); dataFile.flush();
     dataFile.print("BNO Temperature C,"); dataFile.flush();
     dataFile.print("MPL Temperature C,"); dataFile.flush();
