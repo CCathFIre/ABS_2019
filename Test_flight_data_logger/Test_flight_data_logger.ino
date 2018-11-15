@@ -1,11 +1,3 @@
-// My thoughts: right now, everything is very disparate between the three sensors.
-// Can you combine or organize parts of the code (particularly in setup) so that
-// everything reads more cleanly? Also, there are a *ton* of print statements right now.
-// Maybe try and remove most/all of those and then write your own more sparsely. Speaking
-// of which, is displaySensorDetails doing anything useful? I don't think you ever call
-// that function. Just my thoughts; see if you can clean the whole thing up a bit!
-// -Aidan
-
 // libraries
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
@@ -180,5 +172,3 @@ void Print_Header() {
   }
 
 }
-
-
