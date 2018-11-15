@@ -5,21 +5,15 @@
 //#include <SD.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
-#include <Adafruit_ADXL345_U.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BMP280.h>
+#include <Adafruit_BNO055.h>
+#include <utility/imumaths.h>
+#include "SparkFunMPL3115A2.h"
 
-#define BMP_SCK 13
-#define BMP_MISO 12
-#define BMP_MOSI 11 
-#define BMP_CS 10
+//#define BNO055_SAMPLERATE_DELAY_MS (100)
+#define DELAY_TIME 50
 
-const int chipSelect = 28;
-Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
-Adafruit_BMP280 bmp; // I2C
-
-//const float p0 = 0.1;
-//const float r = 0.15;
+Adafruit_BNO055 bno = Adafruit_BNO055();
+MPL3115A2 myPressure;
 
 mtx_type x[3][1] = {{0}, {0}, {0}};
 mtx_type P[3][3] = {{0.005, 0, 0}, {0, 0.0122, 0}, {0, 0, 0.0176}};
@@ -44,31 +38,52 @@ void setup() {
     return;
   }*/
 
-  if (!bmp.begin() || !accel.begin()) {
+  if(!bno.begin()) {
     return;
   }
 
   Serial.println("Hardware initialized");
 
-  accel.setRange(ADXL345_RANGE_16_G);
+  bno.setExtCrystalUse(true);
+
+  myPressure.begin();
+  myPressure.setModeAltimeter(); // Measure altitude above sea level in meters
+  myPressure.setOversampleRate(7); // Set Oversample to the recommended 128
+  myPressure.enableEventFlags(); // Enable all three pressure and temp event flags 
 
   k = -1*Cd*pAir*aRocket / (2*mRocket);
+  
+  x[0][0] = myPressure.readAltitude(); //Set initial altitude based on sensor reading
+  delay(DELAY_TIME);
+  dT = DELAY_TIME / 1000; // Set initial dT
 }
 
 void loop() {
-  sensors_event_t event; 
-  accel.getEvent(&event);
-  float xAccel = event.acceleration.x;
-  float yAccel = event.acceleration.y;
-  float zAccel = event.acceleration.z;
-  float altitude = bmp.readAltitude(1013.25);
+  imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
+  float xAccel = euler.x();
+  float yAccel = euler.y();
+  float zAccel = euler.z();
+  /*Serial.print("X: ");
+  Serial.print(euler.x());
+  Serial.print(" Y: ");
+  Serial.print(euler.y());
+  Serial.print(" Z: ");
+  Serial.print(euler.z());
+  Serial.print("\t\t");*/
+  
+  float altitude = myPressure.readAltitude();
+  /*Serial.print("Altitude(m):");
+  Serial.println(altitude, 2);*/
+  
   dT = (millis() - lastT)/1000;
   float kTabs = 0; // UPDATE THIS WITH ACTUAL TAB DRAG
 
   // Start Kalman filter code
-  mtx_type z[3][1] = {{altitude}, {x[1][0]}, {yAccel}};
+  mtx_type z[3][1] = {{altitude}, {x[1][0]}, {zAccel}};
+  Matrix.Print((mtx_type *)z, 3, 1, "Current readings:");
   mtx_type K[3][3];
   mtx_type tempM[3][3];
+  mtx_type temp_2_M[3][3];
   mtx_type tempV[3][1];
 
   // Calculate Kalman gain
@@ -78,12 +93,13 @@ void loop() {
 
   // Update estimate
   Matrix.Subtract((mtx_type *)z, (mtx_type *)x, 3, 1, (mtx_type *)tempV);
-  Matrix.Multiply((mtx_type *)K, (mtx_type *)tempV, 3, 3, 1, (mtx_type *)tempV);
-  Matrix.Add((mtx_type *)x, (mtx_type *)tempV, 3, 1, (mtx_type *)x);
+  Matrix.Multiply((mtx_type *)K, (mtx_type *)tempV, 3, 3, 1, (mtx_type *)z);
+  Matrix.Add((mtx_type *)x, (mtx_type *)z, 3, 1, (mtx_type *)x);
 
   // Update covariance
+  Matrix.Copy((mtx_type *)P, 3, 3, (mtx_type *)temp_2_M);
   Matrix.Subtract((mtx_type *)I3, (mtx_type *)K, 3, 3, (mtx_type *)tempM);
-  Matrix.Multiply((mtx_type *)tempM, (mtx_type *)P, 3, 3, 3, (mtx_type *)P);
+  Matrix.Multiply((mtx_type *)tempM, (mtx_type *)temp_2_M, 3, 3, 3, (mtx_type *)P);
 
   // Project into next time step
   mtx_type tempTheta[3][3];
@@ -91,17 +107,20 @@ void loop() {
   Theta[0][2] = 0.5*dT*dT;
   Theta[1][2] = dT;
   Theta[2][1] = k + kTabs;
-  Matrix.Multiply((mtx_type *)Theta, (mtx_type *)x, 3, 3, 1, (mtx_type *)x);
+  Matrix.Copy((mtx_type *)x, 3, 1, (mtx_type *)tempV);
+  Matrix.Multiply((mtx_type *)Theta, (mtx_type *)tempV, 3, 3, 1, (mtx_type *)x);
   Matrix.Transpose((mtx_type *)Theta, 3, 3, (mtx_type *)tempTheta);
   Matrix.Multiply((mtx_type *)Theta, (mtx_type *)P, 3, 3, 3, (mtx_type *)tempM);
-  Matrix.Multiply((mtx_type *)tempM, (mtx_type *)tempTheta, 3, 3, 3, (mtx_type *)tempM);
-  Matrix.Add((mtx_type *)tempM, (mtx_type *)Q, 3, 3, (mtx_type *)P);
+  Matrix.Multiply((mtx_type *)tempM, (mtx_type *)tempTheta, 3, 3, 3, (mtx_type *)temp_2_M);
+  Matrix.Add((mtx_type *)temp_2_M, (mtx_type *)Q, 3, 3, (mtx_type *)P);
   
   lastT = millis();
-  // End Kalman filter code
+  
+  Matrix.Print((mtx_type *)x, 3, 1, "State of the world:");
 
+  Serial.println("\n");
 
-  delay(50); // Wait 50 ms to get next sensor reading
+  delay(DELAY_TIME); // Wait 50 ms to get next sensor reading
   /*
   File dataFile = SD.open("datalog.txt", FILE_WRITE);
 
