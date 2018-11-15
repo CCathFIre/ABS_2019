@@ -216,22 +216,22 @@ void loop() {
 
   switch(flightstate){
     case ARMED:
-      if ( accel_z > accelLiftoffThreshold || ( x[0][0] - launchA) > baroLiftoffThreshold){
+      if ( x[2][0] > accelLiftoffThreshold || ( x[0][0] - launchA) > baroLiftoffThreshold){
         flightstate = LAUNCHED;
       }
     break;
     case LAUNCHED:
-      if ( accel_z < accelBurnoutThreshold){
+      if ( x[2][0] < accelBurnoutThreshold){
         flightstate = BURNOUT;
       }
     break;
     case BURNOUT:
-      if ( maxA > x[2][0] ){
+      if ( maxA > x[0][0] ){
         flightstate = APOGEE;
       }
     break;
     case APOGEE:
-      if ( x[1][0] < 0 ){
+      if ( x[0][0] < launchA + 10 && x[1][0] < 1 ){
         flightstate = LANDED;
       }
     break;
