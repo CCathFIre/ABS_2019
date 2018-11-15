@@ -156,32 +156,32 @@ void loop() {
     
     dataFile.print(millis()); dataFile.print(","); dataFile.flush();
     dataFile.print(bno_temp); dataFile.print(","); dataFile.flush();
-    dataFile.print(mpl_temp); dataFile.print(","); dataFile.flush();
-    dataFile.print(accel_x); dataFile.print(","); dataFile.flush();
-    dataFile.print(accel_y); dataFile.print(","); dataFile.flush();
-    dataFile.print(accel_z); dataFile.print(","); dataFile.flush();
-    dataFile.print(bno_gyro_x); dataFile.print(","); dataFile.flush();
-    dataFile.print(bno_gyro_y); dataFile.print(","); dataFile.flush();
-    dataFile.print(bno_gyro_z); dataFile.print(","); dataFile.flush();
-    dataFile.print(l3g_gyro_x); dataFile.print(","); dataFile.flush();
-    dataFile.print(l3g_gyro_y); dataFile.print(","); dataFile.flush();
-    dataFile.print(l3g_gyro_z); dataFile.print(","); dataFile.flush();
-    dataFile.print(mpl_alt); dataFile.print(","); dataFile.flush();
-    dataFile.print(mpl_pres); dataFile.print(","); dataFile.flush();
+    dataFile.print(mpl_temp, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(accel_x, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(accel_y, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(accel_z, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(bno_gyro_x, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(bno_gyro_y, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(bno_gyro_z, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(l3g_gyro_x, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(l3g_gyro_y, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(l3g_gyro_z, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(mpl_alt, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(mpl_pres, 8); dataFile.print(","); dataFile.flush();
     // state matrix begins
-    dataFile.print(x[0][0]); dataFile.print(","); dataFile.flush();
-    dataFile.print(x[1][0]); dataFile.print(","); dataFile.flush();
-    dataFile.print(x[2][0]); dataFile.print(","); dataFile.flush();
+    dataFile.print(x[0][0], 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(x[1][0], 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(x[2][0], 8); dataFile.print(","); dataFile.flush();
     // covariance begins
-    dataFile.print(P[0][0]); dataFile.print(","); dataFile.flush();
-    dataFile.print(P[0][1]); dataFile.print(","); dataFile.flush();
-    dataFile.print(P[0][2]); dataFile.print(","); dataFile.flush();
-    dataFile.print(P[1][0]); dataFile.print(","); dataFile.flush();
-    dataFile.print(P[1][1]); dataFile.print(","); dataFile.flush();
-    dataFile.print(P[1][2]); dataFile.print(","); dataFile.flush();
-    dataFile.print(P[2][0]); dataFile.print(","); dataFile.flush();
-    dataFile.print(P[2][1]); dataFile.print(","); dataFile.flush();
-    dataFile.print(P[2][2]); dataFile.print("\n"); dataFile.flush();
+    dataFile.print(P[0][0], 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[0][1], 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[0][2], 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[1][0], 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[1][1], 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[1][2], 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[2][0], 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[2][1], 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(P[2][2], 8); dataFile.print("\n"); dataFile.flush();
     
     dataFile.close();
   } else {
