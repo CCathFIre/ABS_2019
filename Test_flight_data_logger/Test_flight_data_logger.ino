@@ -16,8 +16,10 @@
 #include <SD.h>
 #include <SPI.h>
 
-#define DELAY_TIME 50
+#define DELAY_TIME 500
+// 50
 const int chipSelect = SDCARD_SS_PIN;
+File dataFile;
 
 // BNO instantiation
 Adafruit_BNO055 bno = Adafruit_BNO055();
@@ -29,14 +31,13 @@ MPL3115A2 MPLPressure;
 /* Assign a unique ID to this sensor at the same time */
 Adafruit_L3GD20_Unified gyro = Adafruit_L3GD20_Unified(20);
 
-
 void setup() {
 
   Serial.begin(9600);   // printing to screen
   Wire.begin();        // Join i2c bus
 
   if (!SD.begin(chipSelect)) {
-    Serial.println("The SD card has exploded!!!");
+    Serial.println("The SD card has not exploded!!!");
     return;
   }
 
@@ -102,10 +103,12 @@ void loop() {
   float mpl_alt = MPLPressure.readAltitude();
   float mpl_pres = MPLPressure.readPressure();
 
-  File dataFile = SD.open("datalog2018.txt", FILE_WRITE);
+  dataFile = SD.open("datalog2018.txt", FILE_WRITE);
 
   // if the file is available, write to it:
   if (dataFile) {
+
+    Serial.println("WITNESS ME!!!");
     
     dataFile.print(millis()); dataFile.print(","); dataFile.flush();
     dataFile.print(bno_temp); dataFile.print(","); dataFile.flush();
@@ -130,7 +133,9 @@ void loop() {
 
 void Print_Header() {
 
-  File dataFile = SD.open("datalog2018.txt", FILE_WRITE);
+  Serial.println("We header");
+
+  dataFile = SD.open("datalog2018.txt", FILE_WRITE);
 
   // if the file is available, write to it:
   if (dataFile) {
@@ -152,6 +157,9 @@ void Print_Header() {
     
     
     dataFile.close();
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("this boi don;t open");
   }
 
 }
