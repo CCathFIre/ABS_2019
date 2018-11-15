@@ -8,7 +8,7 @@
 #include <SD.h>
 #include <SPI.h>
 
-#define DELAY_TIME 500
+#define DELAY_TIME 50
 // 50
 const int chipSelect = SDCARD_SS_PIN;
 File dataFile;
