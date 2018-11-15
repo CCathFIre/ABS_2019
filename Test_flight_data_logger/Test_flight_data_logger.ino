@@ -92,7 +92,7 @@ void setup() {
   
   k = -1*Cd*pAir*aRocket / (2*mRocket);
   
-  x[0][0] = myPressure.readAltitude(); //Set initial altitude based on sensor reading
+  x[0][0] = MPLPressure.readAltitude(); //Set initial altitude based on sensor reading
   lastT = millis();
   delay(DELAY_TIME);
 
