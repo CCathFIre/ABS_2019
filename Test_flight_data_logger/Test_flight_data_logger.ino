@@ -7,10 +7,29 @@
 #include <utility/imumaths.h>
 #include <SD.h>
 #include <SPI.h>
+#include <MatrixMath.h>
 
 #define DELAY_TIME 50
-// 50
+
+// UPDATE THESE VALUES!!
+float lastT, dT;
+float k;
+const float Cd = 0.25; // UPDATE THESE VALUES!!
+const float pAir = 1.225;
+const float aRocket = 0.1;
+const float mRocket = 10;
+// ^^^ UPDATE THESE VALUES!!
+
+// matrices for kalman filter, continually updated
+mtx_type x[3][1] = {{0}, {0}, {0}}; // State (position, velocity, accel), varies with time
+mtx_type P[3][3] = {{0.005, 0, 0}, {0, 0.0122, 0}, {0, 0, 0.0176}}; // Covariance, varies with time
+mtx_type R[3][3] = {{0.1, 0, 0}, {0, 0.1, 0}, {0, 0, 0.4}};   // Distrust of sensors
+mtx_type Theta[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}; // physics transformation matrix
+mtx_type I3[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};  // Identity (for maths)
+mtx_type Q[3][3] = {{0, 0, 0}, {0, 0.001, 0}, {0, 0, 0.001}}; // Distrust of predictions
+
 const int chipSelect = SDCARD_SS_PIN;
+
 File dataFile;
 
 // BNO instantiation
@@ -27,7 +46,7 @@ char filename[9] = "data.txt";
 
 void setup() {
 
-  Serial.begin(9600);   // printing to screen
+  Serial.begin(9600);   // printing to screen     DELETE
 
   // DELETE THIS BEFORE FLIGHT
   // DELETE
@@ -70,6 +89,12 @@ void setup() {
   MPLPressure.setModeAltimeter(); // Measure altitude above sea level in meters (MPL)
   MPLPressure.setOversampleRate(7); // Set Oversample to the recommended 128
   MPLPressure.enableEventFlags(); // Enable all three pressure and temp event flags 
+  
+  k = -1*Cd*pAir*aRocket / (2*mRocket);
+  
+  x[0][0] = myPressure.readAltitude(); //Set initial altitude based on sensor reading
+  lastT = millis();
+  delay(DELAY_TIME);
 
   Print_Header();
 }
@@ -171,4 +196,53 @@ void Print_Header() {
     Serial.println("this boi don;t open");
   }
 
+}
+
+void Kalman(float altitude,float zAccel) {
+  dT = (millis() - lastT)/1000;
+  float kTabs = 0; // UPDATE THIS WITH ACTUAL TAB DRAG
+
+  // Start Kalman filter code
+  mtx_type z[3][1] = {{altitude}, {x[1][0]}, {zAccel}};
+  Matrix.Print((mtx_type *)z, 3, 1, "Current readings:");     // DELETE
+  mtx_type K[3][3];
+  mtx_type tempM[3][3];
+  mtx_type temp_2_M[3][3];
+  mtx_type tempV[3][1];
+
+  
+  // Calculate Kalman gain
+  Matrix.Add((mtx_type *)P, (mtx_type *)R, 3, 3, (mtx_type *)tempM);
+  Matrix.Invert((mtx_type *)tempM, 3);
+  Matrix.Multiply((mtx_type *)P, (mtx_type *)tempM, 3, 3, 3, (mtx_type *)K);
+
+  // Update estimate
+  Matrix.Subtract((mtx_type *)z, (mtx_type *)x, 3, 1, (mtx_type *)tempV);
+  Matrix.Multiply((mtx_type *)K, (mtx_type *)tempV, 3, 3, 1, (mtx_type *)z);
+  Matrix.Add((mtx_type *)x, (mtx_type *)z, 3, 1, (mtx_type *)x);
+
+  // Update covariance
+  Matrix.Copy((mtx_type *)P, 3, 3, (mtx_type *)temp_2_M);
+  Matrix.Subtract((mtx_type *)I3, (mtx_type *)K, 3, 3, (mtx_type *)tempM);
+  Matrix.Multiply((mtx_type *)tempM, (mtx_type *)temp_2_M, 3, 3, 3, (mtx_type *)P);
+
+  
+  // Project into next time step
+  mtx_type tempTheta[3][3];
+  Theta[0][1] = dT;
+  Theta[0][2] = 0.5*dT*dT;
+  Theta[1][2] = dT;
+  Theta[2][1] = k + kTabs;
+  Matrix.Copy((mtx_type *)x, 3, 1, (mtx_type *)tempV);
+  Matrix.Multiply((mtx_type *)Theta, (mtx_type *)tempV, 3, 3, 1, (mtx_type *)x);
+  Matrix.Transpose((mtx_type *)Theta, 3, 3, (mtx_type *)tempTheta);
+  Matrix.Multiply((mtx_type *)Theta, (mtx_type *)P, 3, 3, 3, (mtx_type *)tempM);
+  Matrix.Multiply((mtx_type *)tempM, (mtx_type *)tempTheta, 3, 3, 3, (mtx_type *)temp_2_M);
+  Matrix.Add((mtx_type *)temp_2_M, (mtx_type *)Q, 3, 3, (mtx_type *)P);
+
+  lastT = millis();
+
+  Matrix.Print((mtx_type *)x, 3, 1, "State of the world:");   //DELETE
+  Serial.println("\n");   //DELETE
+  
 }
