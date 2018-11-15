@@ -28,7 +28,6 @@
 #define APOGEE 3
 #define LANDED 4
 
-// UPDATE THESE VALUES!!
 float lastT, dT;
 float k;
 const float Cd = 0.25; // UPDATE THESE VALUES!!
@@ -46,6 +45,8 @@ mtx_type I3[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};  // Identity (for maths)
 mtx_type Q[3][3] = {{0, 0, 0}, {0, 0.001, 0}, {0, 0, 0.001}}; // Distrust of predictions
 
 const int chipSelect = SDCARD_SS_PIN;
+
+int flightstate;
 
 File dataFile;
 
@@ -212,10 +213,10 @@ void Print_Header() {
     dataFile.print("L3G Gyro Y rad/s,"); dataFile.flush();
     dataFile.print("L3G Gyro Z rad/s,"); dataFile.flush();
     dataFile.print("Altitude m,"); dataFile.flush();
-    dataFile.print("Pressure Pa"); dataFile.flush();
-    dataFile.print("Kalman Altitude"); dataFile.flush();
-    dataFile.print("Kalman Velocity"); dataFile.flush();
-    dataFile.print("Kalman Z Acceleration"); dataFile.flush();
+    dataFile.print("Pressure Pa,"); dataFile.flush();
+    dataFile.print("Kalman Altitude,"); dataFile.flush();
+    dataFile.print("Kalman Velocity,"); dataFile.flush();
+    dataFile.print("Kalman Z Acceleration,"); dataFile.flush();
     dataFile.print("Covariance (3x3 Matrix)\n"); dataFile.flush();
     
     dataFile.close();
