@@ -1,10 +1,14 @@
-/* COMMENT BEFORE FLIGHT CHECKLIST
- *  - while(!Serial)
- *  - all Serial.print statements
+/* BEFORE FLIGHT CHECKLIST
+ *    comment out:
+ *    - while(!Serial)
+ *    - all Serial.print statements
+ *    - all Serial.println statements
+ *    - all Matrix.print statements
+ *    update:
+ *    - pAir
+ *    - aRocket
+ *    - mRocket
  */
-
-
-
 
 // libraries
 #include <Wire.h>
@@ -18,6 +22,11 @@
 #include <MatrixMath.h>
 
 #define DELAY_TIME 50
+#define ARMED 0
+#define LAUNCHED 1
+#define BURNOUT 2
+#define APOGEE 3
+#define LANDED 4
 
 // UPDATE THESE VALUES!!
 float lastT, dT;
@@ -223,7 +232,7 @@ void Kalman(float altitude,float zAccel) {
 
   // Start Kalman filter code
   mtx_type z[3][1] = {{altitude}, {x[1][0]}, {zAccel}};
-  Matrix.Print((mtx_type *)z, 3, 1, "Current readings:");     // DELETE
+  Matrix.Print((mtx_type *)z, 3, 1, "Current readings:");
   mtx_type K[3][3];
   mtx_type tempM[3][3];
   mtx_type temp_2_M[3][3];
@@ -261,7 +270,7 @@ void Kalman(float altitude,float zAccel) {
 
   lastT = millis();
 
-  Matrix.Print((mtx_type *)x, 3, 1, "State of the world:");   //DELETE
-  Serial.println("\n");   //DELETE
+  Matrix.Print((mtx_type *)x, 3, 1, "State of the world:");
+  Serial.println("\n");
   
 }
