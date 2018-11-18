@@ -123,7 +123,7 @@ void setup() {
   x[0][0] = MPLPressure.readAltitude(); //Set initial altitude based on sensor reading
   lastT = millis();
 
-  launchA = MPLPressure.readAltitude();
+  launchA = x[0][0];
   
   delay(DELAY_TIME);
 
@@ -166,8 +166,8 @@ void loop() {
   float mpl_alt = MPLPressure.readAltitude();
   float mpl_pres = MPLPressure.readPressure();
 
-  if (maxA < x[2][0]) {
-    maxA = x[2][0];
+  if (maxA < x[0][0]) {
+    maxA = x[0][0];
   }
 
   Kalman(mpl_alt, accel_z);
@@ -213,7 +213,6 @@ void loop() {
   } else {
     Serial.print("whoops\n");
   }
-
 
   switch(flightstate){
     case ARMED:
