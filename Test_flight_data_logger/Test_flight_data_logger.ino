@@ -8,6 +8,7 @@
  *    - pAir
  *    - aRocket
  *    - mRocket
+ *    - DELAY_TIME (if we find a lower value that the sensors can still handle)
  *    
  * AFTER FLIGHT CHECKLIST
  * - inspect SD card for data
