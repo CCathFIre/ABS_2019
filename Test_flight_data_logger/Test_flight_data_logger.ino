@@ -56,12 +56,12 @@ const int chipSelect = SDCARD_SS_PIN;
 
 int flightstate = ARMED;
 
-const float accelLiftoffThreshold = 50; //m/s^2
-const float baroLiftoffThreshold = 10; //m
-const float accelBurnoutThreshold = -5; //m/s^2
-const float baroApogeeThreshold = 5; //m
-const float baroLandedThreshold = 5; //m
-const float accelFreefallThreshold = 30; //m/s^2
+const float accelLiftoffThreshold = 0.5; //m/s^2  50
+const float baroLiftoffThreshold = 0; //m   10
+const float accelBurnoutThreshold = -0.5; //m/s^2 -5
+const float baroApogeeThreshold = 0; //m    5
+const float baroLandedThreshold = 0; //m    5
+const float accelFreefallThreshold = 1; //m/s^2  30
 
 float launchA;
 float maxA = -100;
