@@ -1,4 +1,5 @@
 /* BEFORE FLIGHT CHECKLIST
+ *    make sure R/W on SD card
  *    comment out:
  *    - while(!Serial)
  *    - all Serial.print statements
@@ -55,13 +56,19 @@ mtx_type Q[3][3] = {{0, 0, 0}, {0, 0.001, 0}, {0, 0, 0.001}}; // Distrust of pre
 const int chipSelect = SDCARD_SS_PIN;
 
 int flightstate = ARMED;
+bool LEDINITIAL = false;
+bool LEDWRITING = false;
 
-const float accelLiftoffThreshold = 0.5; //m/s^2  50
-const float baroLiftoffThreshold = 0; //m   10
-const float accelBurnoutThreshold = -0.5; //m/s^2 -5
-const float baroApogeeThreshold = 0; //m    5
-const float baroLandedThreshold = 0; //m    5
-const float accelFreefallThreshold = 1; //m/s^2  30
+bool BNOINIT = false;
+bool L3GINIT = false;
+bool SDINIT = false;
+
+const float accelLiftoffThreshold = 50; //m/s^2  50
+const float baroLiftoffThreshold = 10; //m   10
+const float accelBurnoutThreshold = -5; //m/s^2 -5
+//const float baroApogeeThreshold = 5; //m    5
+//const float baroLandedThreshold = 0; //m    5
+//const float accelFreefallThreshold = 1; //m/s^2  30
 
 float launchA;
 float maxA = -100;
@@ -82,35 +89,51 @@ char filename[9] = "data.txt";
 
 void setup() {
 
-  Serial.begin(9600);   // printing to screen
+  //Serial.begin(9600);   // printing to screen
 
-  while(!Serial) ;  
+  //while(!Serial) ;  
   
   Wire.begin();        // Join i2c bus
 
   if (!SD.begin(chipSelect)) {
-    Serial.println("The SD card has not exploded!!!");
+    //Serial.println("The SD card has not exploded!!!");
     return;
+  } else{
+    SDINIT = true;
   }
 
   /* Initialise the sensors */
   if(!bno.begin())
   {
     /* There was a problem detecting the BNO055 ... check your connections */
-    Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+    //Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
     // Record failure in SD card
     while(1);
+  } else
+  {
+    BNOINIT = true;
   }
    /* Enable auto-ranging */
   gyro.enableAutoRange(true);
   if(!gyro.begin())
   {
     /* There was a problem detecting the L3GD20 ... check your connections */
-    Serial.println("Ooops, no L3GD20 detected ... Check your wiring!");
+    //Serial.println("Ooops, no L3GD20 detected ... Check your wiring!");
     while(1);
   }
-  
+  else
+  {
+    L3GINIT = true;
+  }
+
+  // check if that init returned something // MPLPressure.begin();
   MPLPressure.begin();
+  
+
+  if ( BNOINIT && L3GINIT && SDINIT )
+  {
+    LEDINITIAL = true;
+  }
   
   bno.setExtCrystalUse(true);
 
@@ -128,11 +151,15 @@ void setup() {
   delay(DELAY_TIME);
 
   Print_Header();
+
+  pinMode(6, OUTPUT);
+  pinMode(8, OUTPUT);
+  digitalWrite(6, LEDINITIAL);
 }
 
 void loop() {
 
-  Serial.println("We are looping");
+  //Serial.println("We are looping");
 
   // Temperature variables
   int8_t bno_temp = bno.getTemp();
@@ -176,8 +203,10 @@ void loop() {
 
   // if the file is available, write to it:
   if (dataFile) {
+    
+    LEDWRITING = true;
 
-    Serial.println("WITNESS ME!!!");
+    //Serial.println("WITNESS ME!!!");
 
     dataFile.print(flightstate); dataFile.print(","); dataFile.flush();
     dataFile.print(millis()); dataFile.print(","); dataFile.flush();
@@ -211,7 +240,7 @@ void loop() {
     
     dataFile.close();
   } else {
-    Serial.print("whoops\n");
+    LEDWRITING = false;
   }
 
   switch(flightstate){
@@ -239,18 +268,18 @@ void loop() {
     break;
   }
 
+  digitalWrite(8, LEDWRITING);
+
   delay(DELAY_TIME);
 }
 
 void Print_Header() {
 
-  Serial.println("We header");
-
   dataFile = SD.open(filename, FILE_WRITE);
 
   // if the file is available, write to it:
   if (dataFile) {
-    Serial.println("The header opened");
+    //Serial.println("The header opened");
     dataFile.print("Flight State,"); dataFile.flush();
     dataFile.print("Time ms,"); dataFile.flush();
     dataFile.print("BNO Temperature C,"); dataFile.flush();
@@ -274,7 +303,7 @@ void Print_Header() {
     dataFile.close();
   } else {
     // if the file didn't open, print an error:
-    Serial.println("this boi don;t open");
+    //Serial.println("this boi don;t open");
   }
 
 }
@@ -323,7 +352,7 @@ void Kalman(float altitude,float zAccel) {
 
   lastT = millis();
 
-  Matrix.Print((mtx_type *)x, 3, 1, "State of the world:");
-  Serial.println("\n");
+  //Matrix.Print((mtx_type *)x, 3, 1, "State of the world:");
+  //Serial.println("\n");
   
 }
