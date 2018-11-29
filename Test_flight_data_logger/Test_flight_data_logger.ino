@@ -30,7 +30,7 @@
 #include <SPI.h>
 #include <MatrixMath.h>
 
-#define DELAY_TIME 50
+#define DELAY_TIME 10
 #define ARMED 0
 #define LAUNCHED 1
 #define BURNOUT 2
