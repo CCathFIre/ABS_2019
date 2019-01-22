@@ -89,9 +89,9 @@ char filename[9] = "data.txt";
 
 void setup() {
 
-  //Serial.begin(9600);   // printing to screen
+  //Serial.begin(9600);   // printing to screen // TESTING
 
-  //while(!Serial) ;  
+  //while(!Serial) ;  // TESTING
   
   Wire.begin();        // Join i2c bus
 
@@ -147,8 +147,8 @@ void setup() {
   lastT = millis();
 
   launchA = x[0][0];
-  
-  delay(DELAY_TIME);
+
+  delay(DELAY_TIME); // Delay time for sensor sampling rate
 
   Print_Header();
 
@@ -207,6 +207,24 @@ void loop() {
     LEDWRITING = true;
 
     //Serial.println("WITNESS ME!!!");
+    //Serial.print("accelx");
+    //Serial.print(accel_x, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    //Serial.print("accely");
+    //Serial.print(accel_y, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    //Serial.print("accelz");
+    //Serial.print(accel_z, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    //Serial.print("bnogyrox");
+    //Serial.print(bno_gyro_x, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    //Serial.print("bnogyroy");
+    //Serial.print(bno_gyro_y, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    //Serial.print("bnogyroz");
+    //Serial.print(bno_gyro_z, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    //Serial.print("l3ggyrox");
+    //Serial.print(l3g_gyro_x, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    //Serial.print("l3ggyroy");
+    //Serial.print(l3g_gyro_y, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    //Serial.print("l3ggyroz");
+    //Serial.print(l3g_gyro_z, 8); Serial.print(","); Serial.flush(); Serial.println(" "); Serial.flush();
 
     dataFile.print(flightstate); dataFile.print(","); dataFile.flush();
     dataFile.print(millis()); dataFile.print(","); dataFile.flush();
