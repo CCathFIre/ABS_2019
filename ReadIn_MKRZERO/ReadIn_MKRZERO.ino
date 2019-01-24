@@ -25,10 +25,11 @@
 
 void ReadBestFlight();
 
-const int chipSelect = 28;
-float bestAlt[2351], bestVel[2351];
+const int chipSelect = SDCARD_SS_PIN; // 28  SDCARD_SS_PIN
+//float bestAlt[2351], bestVel[2351];
+float timet[1000], acel[1000], alt[1000];
 
-String inFileName = "BESTFL~1.TXT";
+String inFileName = "test.tsv"; // filenames are limited to 8 characters (?)
 
 void setup() {
   // Open serial communications and wait for port to open:
@@ -50,8 +51,8 @@ void setup() {
 
   ReadBestFlight();
 
-  for(int c=0;c<2350;c++){
-    Serial.print(bestVel[c]); Serial.print(" "); Serial.println(bestAlt[c]);
+  for(int c=0;c<999;c++){
+    Serial.print(timet[c]); Serial.print(" "); Serial.print(acel[c]); Serial.print(" "); Serial.println(alt[c]);
   }
 }
 
@@ -83,6 +84,8 @@ void loop() {
   else {
     Serial.println("error opening datalog.txt");
   }*/
+  // ignore all above loop code, thats for putting to card
+  
 }
 
 void ReadBestFlight(){
@@ -90,8 +93,11 @@ void ReadBestFlight(){
   int c = 0; //Counter variable
   if(inFile){
     while(inFile.available()){
-      bestVel[c] = inFile.parseFloat();
-      bestAlt[c] = inFile.parseFloat();
+      //bestVel[c] = inFile.parseFloat();
+      //bestAlt[c] = inFile.parseFloat();
+      timet[c] = inFile.parseFloat();
+      acel[c] = inFile.parseFloat();
+      alt[c] = inFile.parseFloat();
       c++;
     }
     inFile.close();
@@ -101,11 +107,3 @@ void ReadBestFlight(){
     while(1); //Freeze code if comparison dataset cannot be read
   }
 }
-
-
-
-
-
-
-
-
