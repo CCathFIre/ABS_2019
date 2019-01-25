@@ -29,7 +29,7 @@ const int chipSelect = SDCARD_SS_PIN; // 28  SDCARD_SS_PIN
 //float bestAlt[2351], bestVel[2351];
 float timet[1000], acel[1000], alt[1000];
 
-String inFileName = "test.tsv"; // filenames are limited to 8 characters (?)
+String inFileName = "test.txt"; // filenames are limited to 8 characters (?)
 
 void setup() {
   // Open serial communications and wait for port to open:
