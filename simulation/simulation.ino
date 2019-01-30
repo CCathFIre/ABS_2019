@@ -8,6 +8,8 @@
 #include <SD.h>
 #include <SPI.h>
 #include <MatrixMath.h>
+#include <Servo.h>
+//#include <SdFat.h> //tf is this
 
 #define DELAY_TIME 10
 #define ARMED 0
@@ -36,13 +38,28 @@ mtx_type Q[3][3] = {{0, 0, 0}, {0, 0.001, 0}, {0, 0, 0.001}}; // Distrust of pre
 
 const int chipSelect = SDCARD_SS_PIN;
 
+// initialize state machine
 int flightstate = ARMED;
+
+// confirmation LEDs
 bool LEDINITIAL = false;
 bool LEDWRITING = false;
 
+// sensor and SD initialization
 bool BNOINIT = false;
 bool L3GINIT = false;
 bool SDINIT = false;
+
+// PID
+bool runPIDControl = false; // confirm that this starts false, starts true in 2018 code
+
+// PID
+float lastA, lastCalcT, lastPIDT, launchT=0, launchA=0; // ?, ?, ?, The exact time of takeoff, ?
+float integralTerm = 0, lastError = 0; // ???, last recorded PID error
+
+//Simulation variables
+float realA=-32, realV=600, realY=1350; // ???????
+int t_init = 519000, lastT; //milliseconds, make reasonable number
 
 const float accelLiftoffThreshold = 50; //m/s^2  50
 const float baroLiftoffThreshold = 10; //m   10
@@ -50,6 +67,9 @@ const float accelBurnoutThreshold = -5; //m/s^2 -5
 //const float baroApogeeThreshold = 5; //m    5
 //const float baroLandedThreshold = 0; //m    5
 //const float accelFreefallThreshold = 1; //m/s^2  30
+const float thetaMax = 75;  // Update to max angle
+const float thetaMin = 0;
+const float maxStep = 10; // max degree change
 
 float launchA;
 float maxA = -100;
@@ -128,7 +148,9 @@ void setup() {
   
   //x[0][0] = MPLPressure.readAltitude(); //Set initial altitude based on sensor reading
   x[0][0] = 347; //Set initial altitude to something that makes sense
-  lastT = 519000; // Set this to a reasonable value time value soon before recorded start
+  lastT = timet[indx];
+  lastPIDT = timet[indx];
+  launchT = lastT - t_init;
 
   launchA = x[0][0];
 
@@ -186,6 +208,7 @@ void loop() {
     case ARMED:
       if ( x[2][0] > accelLiftoffThreshold || ( x[0][0] - launchA) > baroLiftoffThreshold){
         flightstate = LAUNCHED;
+        launchT = timet[inc];
       }
     break;
     case LAUNCHED:
@@ -194,11 +217,13 @@ void loop() {
       }
     break;
     case BURNOUT:
+      runPIDControl = true; // PID starts during burnout
       if ( maxA > x[0][0] ){
         flightstate = APOGEE;
       }
     break;
     case APOGEE:
+    runPIDControl = false;  // PID stops when burnout ends 
       if ( x[0][0] < launchA + 10 && x[1][0] < 1 ){
         flightstate = LANDED;
       }
@@ -207,12 +232,66 @@ void loop() {
     break;
   }
 
+  // Runs PID
+  if(runPIDControl){
+    float error = CalcError(X[0][indx], X[1][indx], (int)(timet[indx]-launchT)/10); // Why /10? // takes position, velocity, (time from launch)/10 as arguments
+    theta = PID(error, lastError, integralTerm, millis()-lastPIDT); // integral term is not mentioned anywhere else in the PID code bcs passed by reference, does not remain 0
+    lastError = error;
+    lastPIDT = millis();
+    // uncomment when potentiometer stuff implemented 
+    //runPIDControl = !Check_Jam(); //Shut down the PID control loop if the servos are jammed
+    tabServos.write(theta+20);
+    Serial.print("Set servo angle: "); Serial.println(theta);
+  }
+
   //digitalWrite(8, LEDWRITING);
   if (indx < 1000){
     indx++; // increments index
   } else {
     Serial.println("Simulation Over Asshole");
   }
+}
+
+float CalcError(float realAlt, float realVel, int startT){
+  bool match = false;
+  int c = startT; //To optimize search time, start at the current time point
+
+  while(!match){ //Find closest altitude in buffer to current altitude
+    float test = fabs(realAlt - bestAlt[c]); //Calculate delta-Y at, above, and below current test value
+    float above = fabs(realAlt - bestAlt[c+1]);
+    float below = fabs(realAlt - bestAlt[c-1]);
+    if(test <= above && test <= below) //If current point has least error, we have a match
+      match = true;
+    else if (above < test) //Otherwise, go up or down accordingly
+      c++;
+    else if (below < test)
+      c -= 1;
+  }
+  return (realVel - bestVel[c]); //Return difference in velocities at the given altitude point
+}
+
+float PID(float error, float lastE, float &iTerm, int deltaT){
+  static float cP = 80; //P constant
+  static float cI = 0; //I constant
+  static float cD = 4; //D constant
+  float dT = (float)deltaT/1000; //Variable delta-T term //why is the deltaT/1000
+
+  float pTerm = error*cP; //Calculate each term
+  iTerm = iTerm + error*cI*dT; //The i-term is passed by reference and updated throughout flight
+  float dTerm = (error - lastE)*cD/dT;
+
+  float thetaOut = pTerm + iTerm + dTerm; //calculate intended output angle
+  //thetaOut = thetaMax-thetaOut; //0 is full extension, MAX is full retraction
+  if(thetaOut < thetaMin)
+    thetaOut = thetaMin;
+  else if(thetaOut > thetaMax)
+    thetaOut = thetaMax;
+  if(thetaOut > lastTheta + maxStep)
+    thetaOut = lastTheta + maxStep;
+  if(thetaOut < lastTheta - maxStep)
+    thetaOut = lastTheta - maxStep;
+  lastTheta=thetaOut;
+  return thetaOut; //Since 75 degrees is actually full retraction, not full extension, the output had to be slightly modified
 }
 
 void Print_Header() {
