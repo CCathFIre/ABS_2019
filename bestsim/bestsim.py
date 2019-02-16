@@ -21,6 +21,7 @@ tabSA = 0.00694444  # surface area ft^2 (equal to 1 in^2)
 tabdragC = 1.2      # UPDATE if you get a better const
 p = 0.0765          # Air density lbm/ft3, check if units are right, UPDATE if you have any idea what value to use for this
 
+# I fucked up the math here, used diameter where radius should be, not sure if that diameter value was correct anyway so will leave for now
 rockSA = math.pi * ( 0.6258333 ** 2 ) # ft^2, from pi*r^2 IDK if I fucked up the math I'm CS not a calculator
 rockdragC = 0.295   # UPDATE if you get a better const
 
