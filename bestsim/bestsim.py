@@ -22,7 +22,7 @@ tabdragC = 1.2      # UPDATE if you get a better const
 p = 0.0765          # Air density lbm/ft3, check if units are right, UPDATE if you have any idea what value to use for this
 
 # I fucked up the math here, used diameter where radius should be, not sure if that diameter value was correct anyway so will leave for now
-rockSA = math.pi * ( 0.6258333 ** 2 ) # ft^2, from pi*r^2 IDK if I fucked up the math I'm CS not a calculator
+rockSA = math.pi * ( 0.31291667 ** 2 ) # ft^2, from pi*r^2 IDK if I fucked up the math I'm CS not a calculator
 rockdragC = 0.295   # UPDATE if you get a better const
 
 avgThrust = 250.9   # lbf, T H R U S T (not time)
@@ -41,6 +41,8 @@ max = 0.0           # highest the simulated rocket went
 maxv = 0.0
 
 count = 0
+
+extension = 0   # when
 
 file = open("bestFlight.txt","w+")     # comment out when probing for burntime
 file.write( "altitude,velocity,time\n" )
@@ -63,8 +65,9 @@ while y >= 0: # or vy > 0:
     # kills the engine at the end of burn time
     if t >= burnT:
         avgThrust = 0
+        extension = 1
     # acceleration by drag
-    drag = (1/mass) * 0.5 * (tabSA * tabdragC + rockSA * rockdragC) * p * (vymid ** 2 )
+    drag = (1/mass) * 0.5 * (tabSA * tabdragC * extension + rockSA * rockdragC) * p * (vymid ** 2 )
     # makes drag point the opposite direction of velocity
     if vy < 0:
         drag *= -1
