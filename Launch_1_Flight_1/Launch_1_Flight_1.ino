@@ -53,6 +53,8 @@ const float accelBurnoutThreshold = -5; //m/s^2 -5
 float launchA;
 float maxA = -100;
 
+int rotation = 0;
+
 File dataFile;
 
 // BNO instantiation
@@ -98,7 +100,7 @@ void setup() {
     MPLINIT = true;
   }
 
-  int rotation = analogRead(potPin);
+  rotation = analogRead(potPin);
   if(rotation >= 0 && rotation <= 5000)
   {
     POTENTINIT = true;
@@ -119,8 +121,13 @@ void setup() {
     LEDINITIAL = true;
   }
 
-  pinMode(6, OUTPUT);
-  pinMode(8, OUTPUT);
+  //pinMode(6, OUTPUT);
+  //pinMode(8, OUTPUT);
+  pinMode(0, OUTPUT);
+  pinMode(1, OUTPUT); 
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT); 
   digitalWrite(0, LEDINITIAL);  // all initialized
   digitalWrite(1, BNOINIT);     // BNO good
   digitalWrite(2, MPLINIT);     // MPL good
@@ -135,6 +142,8 @@ void loop() {
   // Temperature variables
   int8_t bno_temp = bno.getTemp();
   float mpl_temp = MPLPressure.readTemp();
+
+  rotation = analogRead(potPin);
 
   // vector creation
   // acceleration units in m/s^2
@@ -202,6 +211,7 @@ void loop() {
     dataFile.print(bno_gyro_z, 8); dataFile.print(","); dataFile.flush();
     dataFile.print(mpl_alt, 8); dataFile.print(","); dataFile.flush();
     dataFile.print(mpl_pres, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print(rotation, 8); dataFile.print("\n"); dataFile.flush();
 //    state matrix begins
 //    dataFile.print(x[0][0], 8); dataFile.print(","); dataFile.flush();
 //    dataFile.print(x[1][0], 8); dataFile.print(","); dataFile.flush();
@@ -258,8 +268,7 @@ void Print_Header() {
 
   // if the file is available, write to it:
   if (dataFile) {
-    Serial.println("The header opened");
-    /*
+    
     dataFile.print("Flight State,"); dataFile.flush();
     dataFile.print("Time ms,"); dataFile.flush();
     dataFile.print("BNO Temperature C,"); dataFile.flush();
@@ -272,11 +281,9 @@ void Print_Header() {
     dataFile.print("BNO Gyro Z rad/s,"); dataFile.flush();
     dataFile.print("Altitude m,"); dataFile.flush();
     dataFile.print("Pressure Pa,"); dataFile.flush();
-    dataFile.print("Kalman Altitude,"); dataFile.flush();
-    dataFile.print("Kalman Velocity,"); dataFile.flush();
-    dataFile.print("Kalman Z Acceleration,"); dataFile.flush();
-    dataFile.print("Covariance (3x3 Matrix)\n"); dataFile.flush();
-    */
+    dataFile.print("Potentiometer\n"); dataFile.flush();
+
+    
     dataFile.close();
   } else {
     // if the file didn't open, print an error:
@@ -341,4 +348,3 @@ bool mplWorking(){
 bool ptmrWorking(){
   
 }
-
