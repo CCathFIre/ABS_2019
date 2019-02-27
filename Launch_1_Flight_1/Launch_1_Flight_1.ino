@@ -121,17 +121,18 @@ void setup() {
     LEDINITIAL = true;
   }
 
-  //pinMode(6, OUTPUT);
-  //pinMode(8, OUTPUT);
   pinMode(0, OUTPUT);
   pinMode(1, OUTPUT); 
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT); 
+  // what do pins 6 & 8 do??
+  pinMode(6, OUTPUT);
+  pinMode(8, OUTPUT);
   digitalWrite(0, LEDINITIAL);  // all initialized
   digitalWrite(1, BNOINIT);     // BNO good
   digitalWrite(2, MPLINIT);     // MPL good
-  digitalWrite(3, POTENTINIT);  // Potent "is very potent"1
+  digitalWrite(3, POTENTINIT);  // Potent "is very potent"
   digitalWrite(4, SDINIT);      // SD good
 }
 
@@ -139,6 +140,12 @@ void loop() {
 
 //  Serial.println("We are looping");
 
+
+
+  /*
+   * BEGIN DATA COLLECTION
+   */
+  
   // Temperature variables
   int8_t bno_temp = bno.getTemp();
   float mpl_temp = MPLPressure.readTemp();
@@ -171,7 +178,14 @@ void loop() {
 
   //Kalman(mpl_alt, accel_z);
 
-  //dataFile = SD.open(filename, FILE_WRITE);
+
+
+
+  /* 
+   *  BEGIN DATA WRITING
+   */
+
+  dataFile = SD.open(filename, FILE_WRITE);
 
   // if the file is available, write to it:
   if (true) {
@@ -212,7 +226,7 @@ void loop() {
     dataFile.print(mpl_alt, 8); dataFile.print(","); dataFile.flush();
     dataFile.print(mpl_pres, 8); dataFile.print(","); dataFile.flush();
     dataFile.print(rotation, 8); dataFile.print("\n"); dataFile.flush();
-//    state matrix begins
+////    state matrix begins
 //    dataFile.print(x[0][0], 8); dataFile.print(","); dataFile.flush();
 //    dataFile.print(x[1][0], 8); dataFile.print(","); dataFile.flush();
 //    dataFile.print(x[2][0], 8); dataFile.print(","); dataFile.flush();

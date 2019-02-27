@@ -16,7 +16,9 @@ int pos = 20;    // variable to store the servo position
 int rotation = 0;
 int extension = 90;
 int retraction = 20;
-int potPin = A1;
+int potPin = A6;
+int minRotation = 2000;
+int maxRotation = 2000;
 float servoJamThreshold = 5;
 
 void setup() {
@@ -33,25 +35,50 @@ void loop() {
   
   for (pos = retraction; pos <= extension; pos += 1) { // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
+    Serial.print("pos= ");
     Serial.print(pos);
     myservo.write(pos);              // tell servo to go to position in variable 'pos'
     delay(15);                       // waits 15ms for the servo to reach the position
+    analogReadResolution(12);
     rotation = analogRead(potPin);
-    Serial.print(","); Serial.println(rotation);
-    Serial.println(Check_Jam());
+    
+    if(rotation > maxRotation){
+      maxRotation = rotation;
+    }
+    if(rotation < minRotation){
+      minRotation = rotation;
+    }
+    
+    
+    Serial.print(",  rotation= "); Serial.println(rotation);
+    Serial.print("min rotation= "); Serial.println(minRotation);
+    Serial.print("max rotation= "); Serial.println(maxRotation);
+    Serial.println("\n");
   }
 
   delay(1000);
   
   for (pos = extension; pos >= retraction; pos -= 1) { // goes from 180 degrees to 0 degrees
+    Serial.print("pos= ");
     Serial.print(pos);
     myservo.write(pos);              // tell servo to go to position in variable 'pos'
     delay(15);                       // waits 15ms for the servo to reach the position
+    analogReadResolution(12);
     rotation = analogRead(potPin);
-    Serial.print(","); Serial.println(rotation);
-    Serial.println(Check_Jam());
-  }
 
+    if(rotation > maxRotation){
+      maxRotation = rotation;
+    }
+    if(rotation < minRotation){
+      minRotation = rotation;
+    }
+    
+    Serial.print(",  rotation= "); Serial.println(rotation);
+    Serial.print("min rotation= "); Serial.println(minRotation);
+    Serial.print("max rotation= "); Serial.println(maxRotation);
+    Serial.println("\n");
+  
+  }
   delay(1000);
 }
 
@@ -62,3 +89,4 @@ bool Check_Jam(){
   else
     return false;
 }
+
