@@ -116,8 +116,6 @@ void setup() {
 
   launchA = x[0][0];
 
-//  Serial.println("WITNESS ME2");
-
   delay(DELAY_TIME); // Delay time for sensor sampling rate
 
   Print_Header();
@@ -127,13 +125,12 @@ void setup() {
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT); 
-  // what do pins 6 & 8 do??
   pinMode(6, OUTPUT);
-  pinMode(8, OUTPUT);
-  digitalWrite(1, BNOINIT);     // BNO good
-  digitalWrite(2, MPLINIT);     // MPL good
-  digitalWrite(3, POTENTINIT);  // Potent "is very potent"
-  digitalWrite(4, SDINIT);      // SD good
+  pinMode(8, OUTPUT); 
+  digitalWrite(0, SDINIT);   
+  digitalWrite(1, BNOINIT);     
+  digitalWrite(2, MPLINIT);     
+  digitalWrite(3, POTENTINIT);    
 }
 
 void loop() {
@@ -173,8 +170,6 @@ void loop() {
   }
 
   //Kalman(mpl_alt, accel_z);
-
-
 
 
   /* 
