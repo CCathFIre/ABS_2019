@@ -1,3 +1,11 @@
+//bool RETRACTONCE = false;     // YOU ADDED THIS AND changed in the functions
+// myservo.write(actualTheta);   // YOU ADDED START RETRACTED
+/*
+  if (maxA < altREAD[READINC]) {      // FIX FOR KALMAN
+    maxA = altREAD[READINC];
+  }
+
+*/
 // libraries
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
@@ -9,12 +17,16 @@
 #include <MatrixMath.h>
 #include <Servo.h>
 
-#define DELAY_TIME 10        // in milliseconds
+#define DELAY_TIME 5        // in milliseconds
 #define ARMED 0
 #define LAUNCHED 1
 #define BURNOUT 2
 #define APOGEE 3
 #define LANDED 4
+
+float timeREAD[1000], acelREAD[1000], altREAD[1000];
+String inFileName = "test.txt"; // filenames are limited to 8 characters (?)
+int READINC = 0;
 
 float lastT, dT;
 float k;
@@ -45,7 +57,7 @@ bool MPLINIT = false;
 bool POTENTINIT = false;
 
 bool EXTENDONCE = false;
-bool RETRACTONCE = false;
+bool RETRACTONCE = false;     // YOU ADDED THIS AND 
 
 const float accelLiftoffThreshold = 50; //m/s^2  50
 const float baroLiftoffThreshold = 10; //m   10
@@ -78,17 +90,26 @@ MPL3115A2 MPLPressure;
 char filename[9] = "data.txt";
 
 void setup() {
+
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
   
   Wire.begin();        // Join i2c bus
 
   myservo.attach(7);
   analogReadResolution(12);     // for potentiometer
+
+  myservo.write(actualTheta);   // YOU ADDED START RETRACTED
  
   if (!SD.begin(chipSelect)) {
     return;
   } else{
     SDINIT = true;
   }
+
+  ReadBestFlight();
 
   // Initialize BNO
   if(bno.begin())
@@ -107,7 +128,7 @@ void setup() {
   
   k = -1*Cd*pAir*aRocket / (2*mRocket);
   
-  x[0][0] = MPLPressure.readAltitude(); //Set initial altitude based on sensor reading
+  x[0][0] = altREAD[READINC]; //Set initial altitude based on sensor reading
 
   // Initialize MPL
   if(x[0][0] >= 0 && x[0][0] <= 2500)
@@ -176,19 +197,22 @@ void loop() {
 
   double accel_x = bno_linearAccel.x();
   double accel_y = bno_linearAccel.y();
-  double accel_z = bno_linearAccel.z();
-
+  //double accel_z = bno_linearAccel.z();
+  double accel_z = acelREAD[READINC];
+  
   double bno_gyro_x = bno_gyro.x();
   double bno_gyro_y = bno_gyro.y();
   double bno_gyro_z = bno_gyro.z();
 
   // Altitude in m
   // Pressure in Pa
-  float mpl_alt = MPLPressure.readAltitude();
+  //float mpl_alt = MPLPressure.readAltitude();
+  float mpl_alt = altREAD[READINC];
+  
   float mpl_pres = MPLPressure.readPressure();
 
-  if (maxA < mpl_alt) {
-    maxA = mpl_alt;
+  if (maxA < altREAD[READINC]) {      // FIX FOR KALMAN
+    maxA = altREAD[READINC];
   }
 
   //Kalman(mpl_alt, accel_z);
@@ -291,6 +315,13 @@ void loop() {
   digitalWrite(8, LEDWRITING);
 
   delay(DELAY_TIME);
+  READINC += 1;
+  Serial.print("ALT: ");
+  Serial.println(mpl_alt);
+  Serial.print("ACCEL Z: ");
+  Serial.println(accel_z);
+  Serial.println("");
+
 }
 
 void Print_Header() {
@@ -410,5 +441,25 @@ void fullRetraction(){
   if( rotation < lessPotent ){              // If tabs didn't full retract, will continue to try
     actualTheta -= 1;
     myservo.write(actualTheta);
+  }
+}
+
+void ReadBestFlight(){
+  File inFile = SD.open(inFileName);
+  int c = 0; //Counter variable
+  if(inFile){
+    while(inFile.available()){
+      //bestVel[c] = inFile.parseFloat();
+      //bestAlt[c] = inFile.parseFloat();
+      timeREAD[c] = inFile.parseFloat();
+      acelREAD[c] = (inFile.parseFloat()) * 0.3048;
+      altREAD[c] = (inFile.parseFloat()) * 0.3048 ;
+      c++;
+    }
+    inFile.close();
+  }
+  else{
+    Serial.println("Error: Unable to open comparison datafile.");
+    while(1); //Freeze code if comparison dataset cannot be read
   }
 }

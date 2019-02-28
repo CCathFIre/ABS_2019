@@ -7,7 +7,6 @@
 #include <SD.h>
 #include <SPI.h>
 #include <MatrixMath.h>
-#include <Servo.h>
 
 #define DELAY_TIME 10        // in milliseconds
 #define ARMED 0
@@ -44,9 +43,6 @@ bool SDINIT = false;
 bool MPLINIT = false;
 bool POTENTINIT = false;
 
-bool EXTENDONCE = false;
-bool RETRACTONCE = false;
-
 const float accelLiftoffThreshold = 50; //m/s^2  50
 const float baroLiftoffThreshold = 10; //m   10
 const float accelBurnoutThreshold = -5; //m/s^2 -5
@@ -59,15 +55,7 @@ float maxA = -100;
 
 int rotation = 0;
 
-int actualTheta = 20;   // starts at 20 full retracted
-int minTheta = 20;
-int maxTheta = 90;
-
-int morePotent = 2500;
-int lessPotent = 1800;
-
 File dataFile;
-Servo myservo;
 
 // BNO instantiation
 Adafruit_BNO055 bno = Adafruit_BNO055();
@@ -81,7 +69,6 @@ void setup() {
   
   Wire.begin();        // Join i2c bus
 
-  myservo.attach(7);
   analogReadResolution(12);     // for potentiometer
  
   if (!SD.begin(chipSelect)) {
@@ -123,7 +110,7 @@ void setup() {
   
   lastT = millis();
 
-  launchA = MPLPressure.readAltitude();
+  launchA = x[0][0];
 
 //  Serial.println("WITNESS ME2");
 
@@ -187,8 +174,8 @@ void loop() {
   float mpl_alt = MPLPressure.readAltitude();
   float mpl_pres = MPLPressure.readPressure();
 
-  if (maxA < mpl_alt) {
-    maxA = mpl_alt;
+  if (maxA < x[0][0]) {
+    maxA = x[0][0];
   }
 
   //Kalman(mpl_alt, accel_z);
@@ -263,24 +250,22 @@ void loop() {
 
   switch(flightstate){
     case ARMED:
-      if ( accel_z > accelLiftoffThreshold || ( mpl_alt - launchA) > baroLiftoffThreshold){
+      if ( x[2][0] > accelLiftoffThreshold || ( x[0][0] - launchA) > baroLiftoffThreshold){
         flightstate = LAUNCHED;
       }
     break;
     case LAUNCHED:
-      if ( accel_z < accelBurnoutThreshold){
+      if ( x[2][0] < accelBurnoutThreshold){
         flightstate = BURNOUT;
       }
     break;
     case BURNOUT:
-      fullExtension();
-      if ( maxA > mpl_alt ){
+      if ( maxA > x[0][0] ){
         flightstate = APOGEE;
       }
     break;
     case APOGEE:
-      fullRetraction();
-      if ( mpl_alt < launchA + 10 ){                  //&& x[1][0] < 1 ){
+      if ( x[0][0] < launchA + 10 && x[1][0] < 1 ){
         flightstate = LANDED;
       }
     break;
@@ -378,37 +363,4 @@ bool mplWorking(){
 
 bool ptmrWorking(){
   
-}
-
-void fullExtension(){  
-
-  if (! EXTENDONCE ){
-    EXTENDONCE = true;
-    for (actualTheta = minTheta; actualTheta <= maxTheta; actualTheta += 5) {  // MAXIMIZE
-      myservo.write(actualTheta);                         // tell servo to go to position in variable 'pos'
-      delay(15);                                          // MINIMIZE
-      rotation = analogRead(potPin);
-    }
-  }
-  if( rotation < morePotent ){              // If tabs didn't full extend, will continue to extend
-    actualTheta += 1;
-    myservo.write(actualTheta);
-  }
-}
-
-
-void fullRetraction(){  
-
-  if (! RETRACTONCE ){
-    RETRACTONCE = true;
-    for (actualTheta = maxTheta; actualTheta >= minTheta; actualTheta -= 5) {  // MAXIMIZE
-      myservo.write(actualTheta);                         // tell servo to go to position in variable 'pos'
-      delay(15);                                          // MINIMIZE
-      rotation = analogRead(potPin);
-    }
-  }
-  if( rotation < lessPotent ){              // If tabs didn't full retract, will continue to try
-    actualTheta -= 1;
-    myservo.write(actualTheta);
-  }
 }
