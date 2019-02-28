@@ -33,7 +33,7 @@ void loop() {
   //myservo.write(0);
   //while(1);
   
-  for (pos = retraction; pos <= extension; pos += 1) { // goes from 0 degrees to 180 degrees
+  for (pos = retraction; pos <= extension; pos += 5) { // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
     Serial.print("pos= ");
     Serial.print(pos);
@@ -58,7 +58,7 @@ void loop() {
 
   delay(1000);
   
-  for (pos = extension; pos >= retraction; pos -= 1) { // goes from 180 degrees to 0 degrees
+  for (pos = extension; pos >= retraction; pos -= 5) { // goes from 180 degrees to 0 degrees
     Serial.print("pos= ");
     Serial.print(pos);
     myservo.write(pos);              // tell servo to go to position in variable 'pos'

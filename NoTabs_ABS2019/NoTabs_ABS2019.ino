@@ -77,7 +77,8 @@ mtx_type Q[3][3] = {{0, 0, 0}, {0, 0.001, 0}, {0, 0, 0.001}};         // Distrus
 
 void setup() {
   
-  Wire.begin();        // Join i2c bus
+  Wire.begin();               // Join i2c bus
+  analogReadResolution(12);   // sets potentiometer range to 1600-2800
 
   // Sensor Flags
   if (!SD.begin(chipSelect)) {        // SD Initialization
@@ -125,8 +126,6 @@ void setup() {
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT); 
-  pinMode(6, OUTPUT);
-  pinMode(8, OUTPUT); 
   digitalWrite(0, SDINIT);   
   digitalWrite(1, BNOINIT);     
   digitalWrite(2, MPLINIT);     

@@ -132,8 +132,8 @@ void setup() {
   digitalWrite(0, LEDINITIAL);  // all initialized
   digitalWrite(1, BNOINIT);     // BNO good
   digitalWrite(2, MPLINIT);     // MPL good
-  digitalWrite(3, POTENTINIT);  // Potent "is very potent"
-  digitalWrite(4, SDINIT);      // SD good
+  //digitalWrite(3, POTENTINIT);  // Potent "is very potent"
+  //digitalWrite(4, SDINIT);      // SD good
 }
 
 void loop() {
