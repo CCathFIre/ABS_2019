@@ -389,11 +389,11 @@ void fullExtension(){
       delay(15);                                          // MINIMIZE
       rotation = analogRead(potPin);
     }
-  }
+  }/*
   if( rotation < morePotent ){              // If tabs didn't full extend, will continue to extend
     actualTheta += 1;
     myservo.write(actualTheta);
-  }
+  } */
 }
 
 
@@ -406,9 +406,9 @@ void fullRetraction(){
       delay(15);                                          // MINIMIZE
       rotation = analogRead(potPin);
     }
-  }
+  } /*
   if( rotation < lessPotent ){              // If tabs didn't full retract, will continue to try
     actualTheta -= 1;
     myservo.write(actualTheta);
-  }
+  } */
 }
