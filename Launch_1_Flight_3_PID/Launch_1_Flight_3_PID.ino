@@ -504,3 +504,26 @@ void matchBestIndex(float v){
   }
 
 }
+/*
+float PID(float error, float lastE, int deltaT){
+  static float cP = 0.80; //P constant            // divide by 100?
+  static float cD = 0.04; //D constant
+  //float dT = (float)deltaT/1000; //Variable delta-T term
+
+  float pTerm = error*cP; //Calculate each term
+  float dTerm = (error - lastE)*cD/dT;
+
+  float thetaOut = pTerm + iTerm + dTerm; //calculate intended output angle
+  thetaOut = thetaMax-thetaOut; //0 is full extension, MAX is full retraction
+  if(thetaOut < thetaMin)
+    thetaOut = thetaMin;
+  else if(thetaOut > thetaMax)
+    thetaOut = thetaMax;
+  if(thetaOut > lastTheta + maxStep)
+    thetaOut = lastTheta + maxStep;
+  if(thetaOut < lastTheta - maxStep)
+    thetaOut = lastTheta - maxStep;
+  lastTheta=thetaOut;
+  return thetaOut;
+}
+*/
