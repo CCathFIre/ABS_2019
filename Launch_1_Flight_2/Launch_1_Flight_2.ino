@@ -175,12 +175,12 @@ void loop() {
   imu::Vector<3> bno_gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
 
   double accel_x = bno_linearAccel.x();
-  double accel_y = bno_linearAccel.y();
-  double accel_z = bno_linearAccel.z();
+  double accel_y = bno_linearAccel.z();
+  double accel_z = bno_linearAccel.y();
 
   double bno_gyro_x = bno_gyro.x();
-  double bno_gyro_y = bno_gyro.y();
-  double bno_gyro_z = bno_gyro.z();
+  double bno_gyro_y = bno_gyro.z();
+  double bno_gyro_z = bno_gyro.y();
 
   // Altitude in m
   // Pressure in Pa

@@ -94,6 +94,10 @@ MPL3115A2 MPLPressure;
 char filename[9] = "data.txt";
 
 void setup() {
+
+  Serial.begin(9600);   // printing to screen // TESTING
+
+  while(!Serial) ;  // TESTING
   
   Wire.begin();        // Join i2c bus
 
@@ -261,6 +265,17 @@ void loop() {
     Serial.flush();
     */
 
+    Serial.print("accel_z");
+    Serial.print(accel_z, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    Serial.print("mpl_alt");
+    Serial.print(mpl_alt, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    Serial.print("rotation");
+    Serial.print(rotation, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    Serial.print("velocity");
+    Serial.print(velocity, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    Serial.print("bestvelocity");
+    Serial.print(velREAD[READINC], 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    
     dataFile.print(flightstate); dataFile.print(","); dataFile.flush();
     dataFile.print(millis()); dataFile.print(","); dataFile.flush();
     dataFile.print(bno_temp); dataFile.print(","); dataFile.flush();
@@ -430,10 +445,10 @@ void fullExtension(){
       rotation = analogRead(potPin);
     }
   }
-  if( rotation < morePotent ){              // If tabs didn't full extend, will continue to extend
-    actualTheta += 1;
-    myservo.write(actualTheta);
-  }
+  //if( rotation < morePotent ){              // If tabs didn't full extend, will continue to extend
+  //  actualTheta += 1;
+  //  myservo.write(actualTheta);
+  //}
 }
 
 // pulls the tabs all the way in
@@ -449,10 +464,10 @@ void fullRetraction(){
       rotation = analogRead(potPin);
     }
   }
-  if( rotation < lessPotent ){              // If tabs didn't full retract, will continue to try
-    actualTheta -= 1;
-    myservo.write(actualTheta);
-  }
+  //if( rotation < lessPotent ){              // If tabs didn't full retract, will continue to try
+  //  actualTheta -= 1;
+  //  myservo.write(actualTheta);
+  //}
 }
 
 // argument is current velocity
@@ -476,8 +491,8 @@ void ReadBestFlight(){
     while(inFile.available()){    // meters vs feet?
       //bestVel[bestLength] = inFile.parseFloat();
       //bestAlt[bestLength] = inFile.parseFloat();
-      altBest[bestLength] = inFile.parseFloat();
-      velBest[bestLength] = (inFile.parseFloat());
+      altBest[bestLength] = inFile.parseFloat() * 0.3048;
+      velBest[bestLength] = (inFile.parseFloat()) * 0.3048;
       timeBest[bestLength] = (inFile.parseFloat());
       bestLength++;
     }
