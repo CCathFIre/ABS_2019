@@ -15,6 +15,11 @@
 #define APOGEE 3
 #define LANDED 4
 
+int testBNO = 0;
+int testMPL = 0;
+int MPLBAD = 0;
+float mpl_alt = 300;
+
 float lastT, dT;
 float k;
 const float Cd = 0.25; // UPDATE THESE VALUES!!
@@ -66,7 +71,7 @@ MPL3115A2 MPLPressure;
 char filename[9] = "data.txt";
 
 // data buffers
-const int BUFFERSIZE = 5;
+const int BUFFERSIZE = 1;
 int BUFFINC = 0;
 
 int flightstateBUFF[BUFFERSIZE];
@@ -84,6 +89,9 @@ float mpl_presBUFF[BUFFERSIZE];
 float rotationBUFF[BUFFERSIZE];
 
 void setup() {
+
+  Serial.begin(9600);
+  while (!Serial);
   
   Wire.begin();        // Join i2c bus
 
@@ -108,7 +116,7 @@ void setup() {
   bno.setExtCrystalUse(true);
 
   MPLPressure.setModeAltimeter(); // Measure altitude above sea level in meters (MPL)
-  MPLPressure.setOversampleRate(7); // Set Oversample to the recommended 128
+  MPLPressure.setOversampleRate(0); // Fuck the police
   MPLPressure.enableEventFlags(); // Enable all three pressure and temp event flags 
   
   k = -1*Cd*pAir*aRocket / (2*mRocket);
@@ -159,6 +167,8 @@ void setup() {
 
 void loop() {
 
+  dataFile = SD.open(filename, FILE_WRITE);
+
   //  Serial.println("We are looping");
   
   // Temperature variables
@@ -174,6 +184,8 @@ void loop() {
   imu::Vector<3> bno_linearAccel = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
   imu::Vector<3> bno_gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
 
+  testBNO = millis();
+
   double accel_x = bno_linearAccel.x();
   double accel_y = bno_linearAccel.y();
   double accel_z = bno_linearAccel.z();
@@ -182,10 +194,22 @@ void loop() {
   double bno_gyro_y = bno_gyro.y();
   double bno_gyro_z = bno_gyro.z();
 
+  Serial.print("BNO:    ");
+  Serial.print(millis() - testBNO);
+  Serial.print("\n");
   // Altitude in m
   // Pressure in Pa
-  float mpl_alt = MPLPressure.readAltitude();
-  float mpl_pres = MPLPressure.readPressure();
+
+  testMPL = millis();
+  
+
+  mpl_alt = MPLPressure.readAltitude();
+
+//  float mpl_pres = MPLPressure.readPressure();
+
+  Serial.print("MPL:    ");
+  Serial.print(millis() - testMPL);
+  Serial.print("\n");
 
   if (maxA < x[0][0]) {
     maxA = x[0][0];
@@ -239,7 +263,7 @@ void loop() {
     bno_gyro_yBUFF[BUFFINC] = bno_gyro_y;
     bno_gyro_zBUFF[BUFFINC] = bno_gyro_z;
     mpl_altBUFF[BUFFINC] = mpl_alt;
-    mpl_presBUFF[BUFFINC] = mpl_pres;
+    //mpl_presBUFF[BUFFINC] = mpl_pres;
     rotationBUFF[BUFFINC] = rotation;
 
     BUFFINC++;
@@ -257,7 +281,8 @@ void loop() {
         dataFile.print(bno_gyro_yBUFF[i], 8); dataFile.print(","); dataFile.flush();
         dataFile.print(bno_gyro_zBUFF[i], 8); dataFile.print(","); dataFile.flush();
         dataFile.print(mpl_altBUFF[i], 8); dataFile.print(","); dataFile.flush();
-        dataFile.print(mpl_presBUFF[i], 8); dataFile.print(","); dataFile.flush();
+        //dataFile.print(mpl_presBUFF[i], 8); dataFile.print(","); dataFile.flush();
+        dataFile.print("Bullshit"); dataFile.print(","); dataFile.flush();
         dataFile.print(rotationBUFF[i], 8); dataFile.print("\n"); dataFile.flush();
     ////    state matrix begins
     //    dataFile.print(x[0][0], 8); dataFile.print(","); dataFile.flush();
@@ -387,4 +412,4 @@ void Kalman(float altitude,float zAccel) {
   //Matrix.Print((mtx_type *)x, 3, 1, "State of the world:");
   //Serial.println("\n");
   
-}s
+}
