@@ -159,13 +159,7 @@ void setup() {
 
 void loop() {
 
-//  Serial.println("We are looping");
-
-
-
-  /*
-   * BEGIN DATA COLLECTION
-   */
+  //  Serial.println("We are looping");
   
   // Temperature variables
   int8_t bno_temp = bno.getTemp();
@@ -314,8 +308,6 @@ void loop() {
   }
 
   digitalWrite(8, LEDWRITING);
-
-  delay(DELAY_TIME);
 }
 
 void Print_Header() {
@@ -395,13 +387,4 @@ void Kalman(float altitude,float zAccel) {
   //Matrix.Print((mtx_type *)x, 3, 1, "State of the world:");
   //Serial.println("\n");
   
-}
-
-
-bool mplWorking(){
-  
-}
-
-bool ptmrWorking(){
-  
-}
+}s
