@@ -66,7 +66,7 @@ MPL3115A2 MPLPressure;
 char filename[9] = "data.txt";
 
 // data buffers
-const int BUFFERSIZE = 100;
+const int BUFFERSIZE = 5;
 int BUFFINC = 0;
 
 int flightstateBUFF[BUFFERSIZE];
