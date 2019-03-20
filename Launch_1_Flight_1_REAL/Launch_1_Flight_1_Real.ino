@@ -206,8 +206,6 @@ void loop() {
    *  BEGIN DATA WRITING
    */
 
-  dataFile = SD.open(filename, FILE_WRITE);
-
   // if the file is available, write to it:
   if (true) {
     
@@ -252,6 +250,7 @@ void loop() {
 
     BUFFINC++;
     if (BUFFINC == BUFFERSIZE){
+      dataFile = SD.open(filename, FILE_WRITE);
       for (int i = 0; i < BUFFERSIZE; i++){
         dataFile.print(flightstateBUFF[i]); dataFile.print(","); dataFile.flush();
         dataFile.print(timeBUFF[i]); dataFile.print(","); dataFile.flush();
