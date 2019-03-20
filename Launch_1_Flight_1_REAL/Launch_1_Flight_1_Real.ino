@@ -213,7 +213,7 @@ void loop() {
     
     LEDWRITING = true;
    
-    fillBuffers();
+    //fillBuffers();
     
     /*
     //Serial.println("WITNESS ME!!!");
@@ -242,13 +242,13 @@ void loop() {
     mpl_tempBUFF[BUFFINC] = mpl_temp;
     accel_xBUFF[BUFFINC] = accel_x;
     accel_yBUFF[BUFFINC] = accel_y;
-    accel_zBUFF[BUFFINC] = accel_zBUFF;
+    accel_zBUFF[BUFFINC] = accel_z;
     bno_gyro_xBUFF[BUFFINC] = bno_gyro_x;
     bno_gyro_yBUFF[BUFFINC] = bno_gyro_y;
     bno_gyro_zBUFF[BUFFINC] = bno_gyro_z;
     mpl_altBUFF[BUFFINC] = mpl_alt;
     mpl_presBUFF[BUFFINC] = mpl_pres;
-    rotationBUFF[BUFFINC] = rotationBUFF;
+    rotationBUFF[BUFFINC] = rotation;
 
     BUFFINC++;
     if (BUFFINC == BUFFERSIZE){
