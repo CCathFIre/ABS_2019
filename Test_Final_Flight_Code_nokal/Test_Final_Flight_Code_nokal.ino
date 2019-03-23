@@ -578,8 +578,8 @@ void ReadBestFlight(){
       //Serial.println(why);
       //Serial.println(dog);
       //Serial.println(how);
-      altBest[bestLength] = fuck;
-      velBest[bestLength] = ard;
+      altBest[bestLength] = fuck  * 0.3048 ;
+      velBest[bestLength] = ard  * 0.3048 ;
       timeBest[bestLength] = dog;
       Serial.println(altBest[bestLength]);
       Serial.println(velBest[bestLength]);
