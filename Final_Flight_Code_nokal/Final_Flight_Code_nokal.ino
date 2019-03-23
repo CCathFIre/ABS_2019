@@ -210,7 +210,8 @@ void loop() {
   currentAlt = mpl_alt;
   currentTime = millis();
 
-  velocity = (currentAlt - prevAlt) / ( 1000 * (currentTime - prevTime) );  // meters?
+  // meters per second = (meters)               / ( 0.001 * milliseconds)
+  velocity             = (currentAlt - prevAlt) / ( 0.001 * (currentTime - prevTime) ); 
 
   prevAlt = currentAlt;
   prevTime = currentTime;
