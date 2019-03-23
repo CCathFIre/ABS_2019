@@ -286,11 +286,13 @@ void loop() {
       if ( (accel_z > accelLiftoffThresholdLow && ( mpl_alt - launchA) > baroLiftoffThresholdLow) || ( mpl_alt - launchA) > baroLiftoffThreshold || accel_z > accelLiftoffThreshold) {
         flightstate = LAUNCHED;
       }
+      fullRetraction();
     break;
     case LAUNCHED:
       if (( accel_z < accelBurnoutThreshold && ( mpl_alt - launchA ) > altBurnoutThresholdLow)|| ( mpl_alt - launchA) > altBurnoutThreshold ){
         flightstate = BURNOUT;
       }
+      fullRetraction();
     break;
     case BURNOUT:
       matchBestIndex(mpl_alt);
@@ -404,10 +406,10 @@ void fullExtension(){
       rotation = analogRead(potPin);
     }
   }
-  if( rotation < morePotent ){              // If tabs didn't full extend, will continue to extend
-    actualTheta += 1;
-    myservo.write(actualTheta);
-  }
+//  if( rotation < morePotent ){              // If tabs didn't full extend, will continue to extend
+//    actualTheta += 1;
+//    myservo.write(actualTheta);
+//  }
 }
 
 // pulls the tabs all the way in
@@ -423,10 +425,10 @@ void fullRetraction(){
       rotation = analogRead(potPin);
     }
   }
-  if( rotation < lessPotent ){              // If tabs didn't full retract, will continue to try
-    actualTheta -= 1;
-    myservo.write(actualTheta);
-  }
+//  if( rotation < lessPotent ){              // If tabs didn't full retract, will continue to try
+//    actualTheta -= 1;
+//    myservo.write(actualTheta);
+//  }
 }
 
 // argument is current velocity
