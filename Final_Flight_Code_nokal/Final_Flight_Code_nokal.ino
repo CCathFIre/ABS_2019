@@ -101,6 +101,8 @@ void setup() {
   Wire.begin();        // Join i2c bus
 
   myservo.attach(7);
+  myservo.write(minTheta);    
+  
   analogReadResolution(12);     // for potentiometer
 
   if (!SD.begin(chipSelect)) {
@@ -208,7 +210,7 @@ void loop() {
   currentAlt = mpl_alt;
   currentTime = millis();
 
-  velocity = (currentAlt - prevAlt) / ( 0.001 * (currentTime - prevTime) );  // meters?
+  velocity = (currentAlt - prevAlt) / ( 1000 * (currentTime - prevTime) );  // meters?
 
   prevAlt = currentAlt;
   prevTime = currentTime;
