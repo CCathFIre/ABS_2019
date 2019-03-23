@@ -77,7 +77,7 @@ int maxTheta = 90;
 int morePotent = 2500;    // TODO: UPDATE
 int lessPotent = 1800;    // TODO: UPDATE
 
-char bestFile[20] = "best.txt";   // use capital S String if doesn't work
+String bestFile = "best.txt";   // use capital S String if doesn't work
 float altBest[400], velBest[400], timeBest[400]; // Adjust this with best flight size
 int bestLength = 0;
 int bestIndex = 1;        // starts at one bcs formula will access index before
@@ -105,6 +105,8 @@ void setup() {
   Wire.begin();        // Join i2c bus
 
   myservo.attach(7);
+  //fullRetraction();
+  myservo.write(minTheta);
   analogReadResolution(12);     // for potentiometer
 
   Serial.begin(9600);
@@ -191,6 +193,7 @@ void setup() {
 
 void loop() {
 
+  //delay(200);
 //  Serial.println("We are looping");
   Serial.println(READINC);
   /*
@@ -217,7 +220,7 @@ void loop() {
   currentAlt = mpl_alt;
   currentTime = millis();
 
-  velocity = (currentAlt - prevAlt) / ( 0.001 * (timeREAD[READINC+1] - timeREAD[READINC]) );  // meters?
+  velocity = (currentAlt - prevAlt) / ( 1 * (timeREAD[READINC+1] - timeREAD[READINC]) );  // meters?
 
   prevAlt = currentAlt;
   prevTime = currentTime;
@@ -262,7 +265,17 @@ void loop() {
     //Serial.print("mpl_pres");
     //Serial.print(mpl_pres, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
     Serial.flush();
-    
+    Serial.print("velocity");
+    Serial.print(velocity); Serial.print(","); Serial.flush(); Serial.println(" ");
+    //Serial.print("mpl_pres");
+    //Serial.print(mpl_pres, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    Serial.flush();
+    Serial.print("bestIndex");
+    Serial.print(bestIndex); Serial.print(","); Serial.flush(); Serial.println(" ");
+    //Serial.print("mpl_pres");
+    //Serial.print(mpl_pres, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    Serial.flush();
+
 
     dataFile.print(flightstate, 4); dataFile.print(",");
     dataFile.print(millis(), 8); dataFile.print(",");
@@ -271,6 +284,10 @@ void loop() {
     dataFile.print(accel_z, 8); dataFile.print(",");
     dataFile.print(mpl_alt, 8); dataFile.print(",");
     dataFile.print(rotation, 8); dataFile.print("\n"); dataFile.flush();
+    dataFile.print(velocity); dataFile.print("\n"); dataFile.flush();
+    dataFile.print(velBest[bestIndex]); dataFile.print("\n"); dataFile.flush();
+    dataFile.print(mpl_alt); dataFile.print("\n"); dataFile.flush();
+    dataFile.print(altBest[bestIndex]); dataFile.print("\n"); dataFile.flush();
 ////    state matrix begins
 //    dataFile.print(x[0][0], 8); dataFile.print(",");
 //    dataFile.print(x[1][0], 8); dataFile.print(",");
@@ -296,11 +313,13 @@ void loop() {
       if ( (accel_z > accelLiftoffThresholdLow && ( mpl_alt - launchA) > baroLiftoffThresholdLow) || ( mpl_alt - launchA) > baroLiftoffThreshold || accel_z > accelLiftoffThreshold) {
         flightstate = LAUNCHED;
       }
+      fullRetraction();
     break;
     case LAUNCHED:
       if (( accel_z < accelBurnoutThreshold && ( mpl_alt - launchA ) > altBurnoutThresholdLow)|| ( mpl_alt - launchA) > altBurnoutThreshold ){
         flightstate = BURNOUT;
       }
+      fullRetraction();
     break;
     case BURNOUT:
       matchBestIndex(mpl_alt);
@@ -409,15 +428,17 @@ void fullExtension(){
   if (! EXTENDONCE ){
     EXTENDONCE = true;
     for (actualTheta = minTheta; actualTheta <= maxTheta; actualTheta += 5) {  // MAXIMIZE
-      myservo.write(actualTheta);                         // tell servo to go to position in variable 'pos'
+      myservo.write(actualTheta);                         // tell servo to go to position in variable 'pos' //REAL!
       delay(15);                                          // MINIMIZE
       rotation = analogRead(potPin);
     }
   }
+  /*
   if( rotation < morePotent ){              // If tabs didn't full extend, will continue to extend
     actualTheta += 1;
     myservo.write(actualTheta);
   }
+  */
 }
 
 // pulls the tabs all the way in
@@ -428,15 +449,17 @@ void fullRetraction(){
   if (! RETRACTONCE ){
     RETRACTONCE = true;
     for (actualTheta = maxTheta; actualTheta >= minTheta; actualTheta -= 5) {  // MAXIMIZE
-      myservo.write(actualTheta);                         // tell servo to go to position in variable 'pos'
+      myservo.write(actualTheta);                         // tell servo to go to position in variable 'pos'   // REAL!
       delay(15);                                          // MINIMIZE
       rotation = analogRead(potPin);
     }
   }
+  /*
   if( rotation < lessPotent ){              // If tabs didn't full retract, will continue to try
     actualTheta -= 1;
     myservo.write(actualTheta);
   }
+  */
 }
 
 // argument is current velocity
@@ -450,27 +473,6 @@ void hardAdjust(float v){
     fullExtension();
   }
 
-}
-
-// Reads in best flight data
-void ReadBestFlight(){
-  File inFile = SD.open(bestFile);
-  //int bestLength = 0; //Counter variable, declared globally
-  if(inFile){
-    while(inFile.available()){    // meters vs feet?
-      //bestVel[bestLength] = inFile.parseFloat();
-      //bestAlt[bestLength] = inFile.parseFloat();
-      altBest[bestLength] = inFile.parseFloat();
-      velBest[bestLength] = (inFile.parseFloat());
-      timeBest[bestLength] = (inFile.parseFloat());
-      bestLength++;
-    }
-    inFile.close();
-  }
-  else{           // TODO: REMOVE IF NOT TESTING
-    Serial.println("Error: Unable to open comparison datafile.");
-    while(1); //Freeze code if comparison dataset cannot be read
-  }
 }
 
 // argument is current alt
@@ -514,6 +516,79 @@ void ReadTestFlight(){
     inFile.close();
   }
   else{
+    Serial.println("Error: Unable to open comparison datafile.");
+    while(1); //Freeze code if comparison dataset cannot be read
+  }
+}
+
+/*
+// Reads in best flight data
+void ReadBestFlight(){
+  File inFile = SD.open(bestFile);
+  int fuck, the, ard;
+  //int bestLength = 0; //Counter variable, declared globally
+  if(inFile){
+    if ( ! inFile.available() ){
+      Serial.println("BEEES BEES EVERYWERE");
+    }
+    while(inFile.available()){    // meters vs feet?
+      //bestVel[bestLength] = inFile.parseFloat();
+      //bestAlt[bestLength] = inFile.parseFloat();
+      altBest[bestLength] = inFile.parseInt();
+      fuck = inFile.parseInt();
+      velBest[bestLength] = (inFile.parseInt());
+      the = (inFile.parseInt());
+      timeBest[bestLength] = (inFile.parseInt());
+      ard = (inFile.parseInt());
+      bestLength++;
+      Serial.println(altBest[bestLength]);
+      Serial.println(velBest[bestLength]);
+      Serial.println(timeBest[bestLength]);
+    }
+    inFile.close();
+  }
+  else{           // TODO: REMOVE IF NOT TESTING
+    Serial.println("Error: Unable to open comparison datafile.");
+    while(1); //Freeze code if comparison dataset cannot be read
+  }
+}
+*/
+
+void ReadBestFlight(){
+  File bFile = SD.open(bestFile);
+  int fuck, the, ard;
+  int why, dog, how;
+  bestLength = 0;
+  //int bestLength = 0; //Counter variable, declared globally
+  if(bFile){
+    if ( ! bFile.available() ){
+      Serial.println("BEEES BEES EVERYWERE");
+    }
+    while(bFile.available()){    // meters vs feet?
+      //Serial.write(bFile.read());
+      fuck = bFile.parseInt();
+      the = bFile.parseInt();
+      ard = bFile.parseInt();
+      why = bFile.parseInt();
+      dog = bFile.parseInt();
+      how = bFile.parseInt();
+      //Serial.println(fuck);
+      //Serial.println(the);
+      //Serial.println(ard);
+      //Serial.println(why);
+      //Serial.println(dog);
+      //Serial.println(how);
+      altBest[bestLength] = fuck;
+      velBest[bestLength] = ard;
+      timeBest[bestLength] = dog;
+      Serial.println(altBest[bestLength]);
+      Serial.println(velBest[bestLength]);
+      Serial.println(timeBest[bestLength]);
+      bestLength++;
+    }
+    bFile.close();
+  }
+  else{           // TODO: REMOVE IF NOT TESTING
     Serial.println("Error: Unable to open comparison datafile.");
     while(1); //Freeze code if comparison dataset cannot be read
   }
