@@ -101,7 +101,7 @@ void setup() {
   Wire.begin();        // Join i2c bus
 
   myservo.attach(7);
-  myservo.write(minTheta);    
+  myservo.write(minTheta);
   
   analogReadResolution(12);     // for potentiometer
 
