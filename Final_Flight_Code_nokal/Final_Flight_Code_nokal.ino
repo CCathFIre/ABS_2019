@@ -139,10 +139,7 @@ void setup() {
   }
 
   rotation = analogRead(potPin);
-  if(rotation >= 0 && rotation <= 5000)
-  {
-    POTENTINIT = true;
-  }
+  POTENTINIT = true;
 
   lastT = millis();
 
@@ -181,10 +178,6 @@ void setup() {
 }
 
 void loop() {
-
-//  Serial.println("We are looping");
-
-
 
   /*
    * BEGIN DATA COLLECTION
@@ -329,10 +322,10 @@ void Print_Header() {
     dataFile.print("Y Acceleration m/s^2,"); dataFile.flush();
     dataFile.print("Z Acceleration m/s^2,"); dataFile.flush();
     dataFile.print("Altitude m,"); dataFile.flush();
-    dataFile.print("Potentiometer,"); dataFile.flush();
-    dataFile.print("Kalman alt,"); dataFile.flush();
-    dataFile.print("Kalman velocity,"); dataFile.flush();
-    dataFile.print("Kalman acceleration\n"); dataFile.flush();
+    dataFile.print("Potentiometer\n"); dataFile.flush();
+//    dataFile.print("Kalman alt,"); dataFile.flush();
+//    dataFile.print("Kalman velocity,"); dataFile.flush();
+//    dataFile.print("Kalman acceleration\n"); dataFile.flush();
 
 
     dataFile.close();
@@ -444,6 +437,7 @@ void hardAdjust(float v){
 
 }
 
+/*
 // Reads in best flight data
 void ReadBestFlight(){
   File inFile = SD.open(bestFile);
@@ -462,6 +456,30 @@ void ReadBestFlight(){
   else{           // TODO: REMOVE IF NOT TESTING
     Serial.println("Error: Unable to open comparison datafile.");
     while(1); //Freeze code if comparison dataset cannot be read
+  }
+}
+*/
+
+void ReadBestFlight(){
+  File bFile = SD.open(bestFile);
+  int fuck, the, ard;
+  int why, dog, how;
+  bestLength = 0;
+  //int bestLength = 0; //Counter variable, declared globally
+  if(bFile){
+    while(bFile.available()){    // meters vs feet?
+      fuck = bFile.parseInt();
+      the = bFile.parseInt();
+      ard = bFile.parseInt();
+      why = bFile.parseInt();
+      dog = bFile.parseInt();
+      how = bFile.parseInt();
+      altBest[bestLength] = fuck  * 0.3048 ;
+      velBest[bestLength] = ard  * 0.3048 ;
+      timeBest[bestLength] = dog;
+      bestLength++;
+    }
+    bFile.close();
   }
 }
 
@@ -485,5 +503,4 @@ void matchBestIndex(float alt){
       bestIndex -= 1;
     }
   }
-
 }

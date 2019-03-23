@@ -192,10 +192,9 @@ void setup() {
 }
 
 void loop() {
-
-  //delay(200);
-//  Serial.println("We are looping");
+  
   Serial.println(READINC);
+  
   /*
    * BEGIN DATA COLLECTION
    */
@@ -506,8 +505,8 @@ void ReadTestFlight(){
       //bestVel[c] = inFile.parseFloat();
       //bestAlt[c] = inFile.parseFloat();
       timeREAD[c] = inFile.parseFloat();
-      acelREAD[c] = (inFile.parseFloat() + 32) * 0.3048;
-      altREAD[c] = (inFile.parseFloat()) * 0.3048 ;
+      acelREAD[c] = (inFile.parseFloat() + 32) * 0.3028;
+      altREAD[c] = (inFile.parseFloat()) * 0.3028 ;
       Serial.println("TEST");
       Serial.println(altREAD[c]);
       Serial.println("TEST");
