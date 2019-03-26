@@ -248,7 +248,7 @@ void loop() {
     */
 
     dataFile.print(flightstate, 4); dataFile.print(",");
-    dataFile.print(millis(), 8); dataFile.print(",");
+    dataFile.print(millis(), 10); dataFile.print(",");    // very important 
     dataFile.print(accel_x, 8); dataFile.print(",");
     dataFile.print(accel_y, 8); dataFile.print(","); dataFile.flush();
     dataFile.print(accel_z, 8); dataFile.print(",");
